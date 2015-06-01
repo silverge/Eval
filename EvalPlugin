@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+  	<title>Content Assist</title>
+  	<script src="deferred.js"></script>
+  	<script src="plugin.js"></script>
+  	<script type="text/javascript" src="EvalString.js"></script>
+  	<script>
+    var headers = {
+        name: "Eval plugin",
+        version: "1.0",
+        description: "Eval Plugin",
+    };
+    
+    var provider = new orion.PluginProvider(headers);
+    
+	var lineNumberArray = []; // This array holds all the line numbers from the eval trace after adding the correct offset.
+	var descriptionArray = []; // This array holds the corresponding description for the line number.
+	
+	/**
+	* This function looks for the url in the original file and figured out the correct offset based on that.
+	* It will save the correct offset line number into the lineNumberArray and the corresponding description in the descriptionArray
+	*/
+	function offset(lines, evalString) {
+		var eStringLineSplit = evalString.split(/\“?\”/);
+        var source = eStringLineSplit[0].split('“');
+        var sourceLineNumber = eStringLineSplit[1].split(',');
+        for (var i = 0; i < lines.length; i++) {
+			if (lines[i].indexOf(source[1]) !== -1) {
+				var x = parseInt(sourceLineNumber[1], 10);
+				lineNumberArray.push(i + x + 1);
+				descriptionArray.push(eStringLineSplit[2]);
+				return "anuj";
+			}
+		}
+	}
+	
+	/**
+	* This function parses through the descriptionArray and puts all the distinct values in the var description and counts the
+	* number of occurences and puts them in the occurencesArray.
+	*/
+	function evalDescriptionOccurences(lineNumber, occurencesArray, description) {
+		for (var a = 0; a < lineNumberArray.length; a++) {
+			if (lineNumberArray[a] === lineNumber) {
+				var x;
+				for (var b = 1; b < description.length; b++) {
+					if (description[b] === descriptionArray[a]) {
+						x = b;
+					}
+				}
+					if (x) {
+						occurencesArray[x]++;
+					}
+					else {
+						description.push(descriptionArray[a]);
+						occurencesArray.push(1);
+					}	
+				
+			}
+		}
+	}
+	
+	var serviceImpl = {
+      computeProblems: function(editorContext) {
+      	var problems = [];
+      	return editorContext.getText().then(function(contents) {
+      		var lines = contents.split(/\r?\n/);
+      		//the following four lines input a text file and returns it into a string
+      		var xmlhttp=new XMLHttpRequest();
+      		xmlhttp.open("GET","Berts-BreakdownEval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
+      		xmlhttp.send(); //sends request, in this case GET, to server
+      		var xmlstring = xmlhttp.responseText; //turns file text into a string
+      		var eStringLines = xmlstring.split(/\r?\n/);
+			var k;
+			
+			// This for loop calls the offset function for each line of the eval trace.
+			for (var a = 0; a < eStringLines.length; a++) {
+				if (eStringLines[a].length > 12) {
+					k = offset(lines, eStringLines[a]);
+				}
+			}
+				
+      		for (var i=0; i < lines.length; i++) {
+      			var line = lines[i];
+      			var match = /eval/.exec(line);
+      			if (match && k) {
+					var occurencesArray = []; // This array holds the occurencts of the distinct values in the description array.
+					var description = []; // This array should only hold the distinct values from the descriptionArray
+                  	evalDescriptionOccurences(i + 1, occurencesArray, description);
+                  	for (var c = 0; c < description.length; c++) {
+                  		var descriptionString = "There were " + (occurencesArray[c]).toString() + " occurences of: \"" + description;
+                  		problems.push({
+                    	description: descriptionString,
+                    	id: "Anuj",
+                    	line: i + 1,
+                    	start: match.index + 1,
+                    	end: match.index + match[0].length + 1,
+                    	severity: "warning" });             
+                  	}
+                }
+            }
+            var result = { problems: problems };
+            return result;
+        });
+    }};
+    
+    var properties = {
+        name: "Eval function",
+        contentType: ["application/javascript", "text/html"]
+    };
+    provider.registerServiceProvider("orion.edit.validator", serviceImpl, properties);
+ 	provider.connect();
+ 	</script>
+</head>
+<body></body>
+</html>
