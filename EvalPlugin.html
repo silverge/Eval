@@ -88,7 +88,7 @@
 					var occurencesArray = []; // This array holds the occurencts of the distinct values in the description array.
 					var description = []; // This array should only hold the distinct values from the descriptionArray
                   	evalDescriptionOccurences(i + 1, occurencesArray, description);
-                  	for (var c = 0; c < description.length; c++) {
+                  	for (var c = 1; c < occurencesArray.length; c++) {
                   		var descriptionString = "There were " + (occurencesArray[c]).toString() + " occurences of: \"" + description;
                   		problems.push({
                     	description: descriptionString,
