@@ -15,23 +15,21 @@
     
     var provider = new orion.PluginProvider(headers);
     
-	var lineNumberArray = []; // This array holds all the line numbers from the eval trace after adding the correct offset.
-	var descriptionArray = []; // This array holds the corresponding description for the line number.
 	
 	/**
 	* This function looks for the url in the original file and figured out the correct offset based on that.
 	* It will save the correct offset line number into the lineNumberArray and the corresponding description in the descriptionArray
 	*/
-	function offset(lines, evalString) {
-		var eStringLineSplit = evalString.split(/\“?\”/);
-        var source = eStringLineSplit[0].split('“');
-        var sourceLineNumber = eStringLineSplit[1].split(',');
-        for (var i = 0; i < lines.length; i++) {
-			if (lines[i].indexOf(source[1]) !== -1) {
+	function offset(lines, evalString, lineNumberArray, descriptionArray) {
+		var eStringLineSplit = evalString.split(/\“?\”/); // This splits the evalString Line into 3 parts
+        var source = eStringLineSplit[0].split('“'); // This line splits the eStringLineSplit[0] into 2 parts
+        var sourceLineNumber = eStringLineSplit[1].split(','); // This line splits the eStringLineSplit[1] into 2 parts
+        for (var i = 0; i < lines.length; i++) { // This for loop looks through each line of the current document to find the source
+			if (lines[i].indexOf(source[1]) !== -1) { //this checkes if the line contains the source[1]
 				var x = parseInt(sourceLineNumber[1], 10);
-				lineNumberArray.push(i + x + 1);
+				lineNumberArray.push(i + x);
 				descriptionArray.push(eStringLineSplit[2]);
-				return "anuj";
+				return "true";
 			}
 		}
 	}
@@ -40,19 +38,19 @@
 	* This function parses through the descriptionArray and puts all the distinct values in the var description and counts the
 	* number of occurences and puts them in the occurencesArray.
 	*/
-	function evalDescriptionOccurences(lineNumber, occurencesArray, description) {
+	function evalDescriptionOccurences(lineNumber, occurencesArray, description, lineNumberArray, descriptionArray) {
 		for (var a = 0; a < lineNumberArray.length; a++) {
 			if (lineNumberArray[a] === lineNumber) {
 				var x;
-				for (var b = 1; b < description.length; b++) {
+				for (var b = 0; b < description.length; b++) {
 					if (description[b] === descriptionArray[a]) {
 						x = b;
 					}
 				}
-					if (x) {
-						occurencesArray[x]++;
+				if (x) {
+						occurencesArray[x-1]++;
 					}
-					else {
+				else {
 						description.push(descriptionArray[a]);
 						occurencesArray.push(1);
 					}	
@@ -65,7 +63,7 @@
       computeProblems: function(editorContext) {
       	var problems = [];
       	return editorContext.getText().then(function(contents) {
-      		var lines = contents.split(/\r?\n/);
+      		var lines = contents.split(/\r?\n/); //split at a return and/or new line
       		//the following four lines input a text file and returns it into a string
       		var xmlhttp=new XMLHttpRequest();
       		xmlhttp.open("GET","Berts-BreakdownEval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
@@ -74,10 +72,13 @@
       		var eStringLines = xmlstring.split(/\r?\n/);
 			var k;
 			
+			var lineNumberArray = []; // This array holds all the line numbers from the eval trace after adding the correct offset.
+			var descriptionArray = []; // This array holds the corresponding description for the line number.
+			
 			// This for loop calls the offset function for each line of the eval trace.
 			for (var a = 0; a < eStringLines.length; a++) {
-				if (eStringLines[a].length > 12) {
-					k = offset(lines, eStringLines[a]);
+				if (eStringLines[a].length > 12) { //check if the current line has substantial information
+					k = offset(lines, eStringLines[a], lineNumberArray, descriptionArray);
 				}
 			}
 				
@@ -85,11 +86,11 @@
       			var line = lines[i];
       			var match = /eval/.exec(line);
       			if (match && k) {
-					var occurencesArray = []; // This array holds the occurences of the distinct values in the description array.
+					var occurencesArray = []; // This array holds the occurencts of the distinct values in the description array.
 					var description = []; // This array should only hold the distinct values from the descriptionArray
-                  	evalDescriptionOccurences(i + 1, occurencesArray, description);
-                  	for (var c = 1; c < occurencesArray.length; c++) {
-                  		var descriptionString = "There were " + (occurencesArray[c]).toString() + " occurences of: \"" + description;
+                  	evalDescriptionOccurences(i, occurencesArray, description, lineNumberArray, descriptionArray);
+                  	for (var c = 0; c < occurencesArray.length-1; c++) {
+                  		var descriptionString = "There were " + (occurencesArray[c]).toString() + " occurences of: \"" + description[c];
                   		problems.push({
                     	description: descriptionString,
                     	id: "Anuj",
