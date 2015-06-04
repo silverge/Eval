@@ -26,7 +26,7 @@
       	return editorContext.getText().then(function(contents) {
       		var lines = contents.split(/\r?\n/); //split at a return and/or new line
       		var xmlhttp=new XMLHttpRequest();
-      		xmlhttp.open("GET","eval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
+      		xmlhttp.open("GET","Berts-BreakdownEval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
       		xmlhttp.send(); //sends request, in this case GET, to server
       		var xmlstring = xmlhttp.responseText; //turns file text into a string
       		var eString = xmlstring.split(/\r?\n/);
