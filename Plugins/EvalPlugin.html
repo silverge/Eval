@@ -8,98 +8,88 @@
   	<script type="text/javascript" src="EvalString.js"></script>
   	<script>
     var headers = {
-        name: "Eval plugin",
+        name: "Eval Plugin",
         version: "1.0",
         description: "Eval Plugin",
     };
     
     var provider = new orion.PluginProvider(headers);
-    
 	
-	/**
-	* This function looks for the url in the original file and figured out the correct offset based on that.
-	* It will save the correct offset line number into the lineNumberArray and the corresponding description in the descriptionArray
-	*/
-	function offset(lines, evalString, lineNumberArray, descriptionArray) {
-		var eStringLineSplit = evalString.split(/\“?\”/); // This splits the evalString Line into 3 parts
-        var source = eStringLineSplit[0].split('“'); // This line splits the eStringLineSplit[0] into 2 parts
-        var sourceLineNumber = eStringLineSplit[1].split(','); // This line splits the eStringLineSplit[1] into 2 parts
-        for (var i = 0; i < lines.length; i++) { // This for loop looks through each line of the current document to find the source
-			if (lines[i].indexOf(source[1]) !== -1) { //this checkes if the line contains the source[1]
-				var x = parseInt(sourceLineNumber[1], 10);
-				lineNumberArray.push(i + x);
-				descriptionArray.push(eStringLineSplit[2]);
-				return "true";
-			}
-		}
-	}
-	
-	/**
-	* This function parses through the descriptionArray and puts all the distinct values in the var description and counts the
-	* number of occurences and puts them in the occurencesArray.
-	*/
-	function evalDescriptionOccurences(lineNumber, occurencesArray, description, lineNumberArray, descriptionArray) {
-		for (var a = 0; a < lineNumberArray.length; a++) {
-			if (lineNumberArray[a] === lineNumber) {
-				var x;
-				for (var b = 0; b < description.length; b++) {
-					if (description[b] === descriptionArray[a]) {
-						x = b;
-					}
-				}
-				if (x) {
-						occurencesArray[x-1]++;
-					}
-				else {
-						description.push(descriptionArray[a]);
-						occurencesArray.push(1);
-					}	
-				
-			}
-		}
-	}
+	function str(strname, fre){
+    		this.strname= strname;
+    		this.fre= fre;
+    	}
 	
 	var serviceImpl = {
       computeProblems: function(editorContext) {
       	var problems = [];
       	return editorContext.getText().then(function(contents) {
       		var lines = contents.split(/\r?\n/); //split at a return and/or new line
-      		//the following four lines input a text file and returns it into a string
       		var xmlhttp=new XMLHttpRequest();
-      		xmlhttp.open("GET","Berts-BreakdownEval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
+      		xmlhttp.open("GET","eval.txt", false); // This plugin is curently set only for the Berts-Breakdown website.
       		xmlhttp.send(); //sends request, in this case GET, to server
       		var xmlstring = xmlhttp.responseText; //turns file text into a string
-      		var eStringLines = xmlstring.split(/\r?\n/);
-			var k;
-			
-			var lineNumberArray = []; // This array holds all the line numbers from the eval trace after adding the correct offset.
-			var descriptionArray = []; // This array holds the corresponding description for the line number.
-			
-			// This for loop calls the offset function for each line of the eval trace.
-			for (var a = 0; a < eStringLines.length; a++) {
-				if (eStringLines[a].length > 12) { //check if the current line has substantial information
-					k = offset(lines, eStringLines[a], lineNumberArray, descriptionArray);
+      		var eString = xmlstring.split(/\r?\n/);
+		
+			var array = [[]];
+			var n=0;
+			for(var a = 0; a < eString.length; a++) {
+				if(eString[a].length > 12) {
+					var eStringSplit = eString[a].split(',');
+            		var dir = eStringSplit[0].substring(1, eStringSplit[0].length-1);
+            		var lineNum = eStringSplit[1].replace(/"/g, "");
+            		var third = eStringSplit[2].substring(1, eStringSplit[2].length-1);
+            		
+            		for(var b = 0; b < lines.length; b++) {
+						if(lines[b].indexOf(dir) !== -1) {
+ 							var c = parseInt(lineNum, 10);
+
+							if(array[b+c+1]) {
+								if(array[b+c+1][0] && !array[b+c+1][1]) {
+									array[b+c+1][1]= new str(third, 1);
+								}
+								for(var d = n; d < array[b+c+1].length; d++) {
+									if(array[b+c+1][d]) {
+										if(array[b+c+1][d].strname === third) {
+											array[b+c+1][d].fre++;
+											break;
+										}
+										else {
+											array[b+c+1][d+1]= new str(third, 1);
+											n++;
+											break;
+										}
+									}
+								}
+							}
+							else {
+								array[c+b+1]= [];
+								array[c+b+1][0]= new str(third,1);
+							}
+						}
+					}
 				}
-			}
-				
-      		for (var i=0; i < lines.length; i++) {
+			}         			
+
+      		for (var i=0; i < lines.length-1; i++) {
       			var line = lines[i];
       			var match = /eval/.exec(line);
-      			if (match && k) {
-					var occurencesArray = []; // This array holds the occurencts of the distinct values in the description array.
-					var description = []; // This array should only hold the distinct values from the descriptionArray
-                  	evalDescriptionOccurences(i, occurencesArray, description, lineNumberArray, descriptionArray);
-                  	for (var c = 0; c < occurencesArray.length-1; c++) {
-                  		var descriptionString = "There were " + (occurencesArray[c]).toString() + " occurences of: \"" + description[c];
+      			if (match) {
+      				for(var key in array) {
+      					if(parseInt(key, 10) === i+1) {
+      					for(var v = 0; v < array[key].length; v++) {
+						var descriptionString = "There were " + array[key][v].fre + " occurence(s) of: " + array[key][v].strname;
                   		problems.push({
-                    	description: descriptionString,
-                    	id: "Anuj",
-                    	line: i + 1,
-                    	start: match.index + 1,
-                    	end: match.index + match[0].length + 1,
-                    	severity: "warning" });             
-                  	}
-                }
+	                    	description: descriptionString,
+	                    	id: "Anuj",
+	                    	line: i + 1,
+	                    	start: match.index + 1,
+	                    	end: match.index + match[0].length + 1,
+	                    	severity: "warning" });             
+                  		}
+                  		}
+                  		}
+                 	}
             }
             var result = { problems: problems };
             return result;
