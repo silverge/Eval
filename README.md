@@ -23,3 +23,7 @@ Here is a useful link to the documentation for Content Assist the with example p
 XMLHttpRequest: object was used in order to convert the given text file into a string. The XMLHttpRequest object allows for a data exchange with the server after the page has loaded. The methods used were open, send and responseText. First, the text file was inputted and sent to the server, then the data received was turned into a string.
 Here is a useful link to help show the methods used and their parameters: http://www.w3schools.com/xml/xml_parser.asp
 
+HOW TO
+
+In order to run this plugin and see the results, you must put all the files into one folder in Orionhub.org
+The eval trace text file must be opened as a website and the url must be saved. In the settings tab of Orion, the 'install' button is clicked and the url is inserted. On the source file, all of the corresponding occurences of 'eval' should be underlined in yellow. When you hover on that word, it should show you the eval traces corresponding to that line.
