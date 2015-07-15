@@ -1,0 +1,23 @@
+(inline-1_orig_.js:2:18:2:30) & var p = 0; & string
+(inline-1_orig_.js:4:6:4:10) & null & object
+(inline-1_orig_.js:5:6:5:12) & null & string
+(inline-1_orig_.js:6:6:6:8) &  & string
+(inline-1_orig_.js:9:6:9:13) & y=2+x & string
+(inline-1_orig_.js:10:6:10:23) & eval('x=x+1;'); & string
+(eval(inline-1_orig_.js:10:6:10:23):1:6:1:14) & x=x+1; & string
+(inline-1_orig_.js:16:12:16:47) @ function apply() { [native code] } @ undefined @ 10,2 @ 20
+(inline-2_orig_.js:5:6:5:33) & var m = myFunction(1, 2); & string
+(inline-2_orig_.js:3:17:3:30) & 1+2; & string
+(inline-2_orig_.js:7:6:7:14) & y=2+0 & string
+(inline-2_orig_.js:7:6:7:14) & y=2+1 & string
+(inline-2_orig_.js:7:6:7:14) & y=2+2 & string
+(inline-2_orig_.js:7:6:7:14) & y=2+3 & string
+(inline-2_orig_.js:7:6:7:14) & y=2+4 & string
+(inline-2_orig_.js:9:6:9:29) & console.log('hello'); & string
+(inline-2_orig_.js:9:37:9:41) & hi & string
+(inline-2_orig_.js:9:49:9:54) & wow & string
+(inline-2_orig_.js:11:6:11:7) & undefined & undefined
+(inline-2_orig_.js:12:6:12:47) & var g = function (c, d) {return c * d}; & string
+(inline-2_orig_.js:13:6:13:28) & console.log(g(3,4)); & string
+(inline-2_orig_.js:17:11:17:40) @ function apply() { [native code] } @ null @ 5,6,2,3,7 @ 7
+(inline-2_orig_.js:20:11:20:40) @ function apply() { [native code] } @ null @ 5,6,2,3,7 @ 2
