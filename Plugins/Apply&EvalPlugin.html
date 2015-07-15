@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+  	<title>Eval and Apply Plugin</title>
+  	<script src="deferred.js"></script>
+  	<script src="plugin.js"></script>
+  	<script>
+    var headers = {
+        name: "Eval & Apply Plugin",
+        version: "1.0",
+        description: "Eval and Apply Plugin",
+    };
+    var provider = new orion.PluginProvider(headers);
+  //this is an object for the eval function
+	function str(strname, fre, type){
+    		this.strname= strname;
+    		this.fre= fre;
+    		this.type = type;
+    	}
+    	//this is an object for the apply function
+    	function apr(aname, arg, res) {
+    		this.aname = aname;
+    		this.arg = arg;
+    		this.res = res;
+    	}
+	var serviceImpl = {
+      computeProblems: function(editorContext) {
+      	var problems = [];
+      	return editorContext.getText().then(function(contents) {
+      		
+      		var lines = contents.split(/\r?\n/); //split at a return and/or new line
+      		var xmlhttp=new XMLHttpRequest();
+      		xmlhttp.open("GET","applyR.txt", false); // This plugin is curently set only for one text file
+      		xmlhttp.send(); //sends request, in this case GET, to server
+      		var xmlstring = xmlhttp.responseText; //turns file text into a string
+      		var eString = xmlstring.split(/\r?\n/);
+			var k;
+			var array = []; //array for eval
+			var aaray=[]; //array for apply
+       		var scriptNum = 0;
+			var oldScript=-1;
+           	var scriptNumb=0;
+           	var oldScripts=-1;
+           	//for loop going through all of the analysis results
+           	for(var a = 0; a < eString.length; a++) {
+           		if(eString[a].match(/@/g) !== null) {	//checks if the line is an apply analysis
+           			var split = eString[a].split('@');
+           			var loca = split[0].split(':');
+           			var appRow=parseInt(loca[1],10); //gets the row where apply is
+           			var appCol = parseInt(loca[2],10);
+           			var func = split[1].substring(10, split[1].indexOf(" ", 10));//no spaces
+           			var args = split[2]; //leave for now
+           			var resul = split[3];//leave for now
+           			var currScripts=parseInt(split[0].charAt(8), 10);
+       			if(currScripts>oldScripts) {
+       				for(var f =scriptNumb+1; f < lines.length;f++) {
+       					if(lines[f].indexOf("<script>") !== -1 || lines[f].indexOf('<script type="text/javascript">')!== -1 ||
+       					lines[f].indexOf('<Script language="Javascript">') !==-1 || lines[f].indexOf('<script language="Javascript">') !==-1) {
+       						scriptNumb = f;
+       						break;
+       					}
+       				}
+       			}
+       			oldScripts = currScripts;
+       			//going through the source file to find the match for the trace
+       			//and adding to the array
+           			for(var e=0;e<lines.length;e++) {
+           				if(e===appRow+scriptNumb && func === "apply()") {
+           				if(aaray[e]) {
+           					if(typeof(aaray[e][appCol])==="undefined") {
+           						aaray[e][appCol]=[];
+           						aaray[e][appCol][0]= new apr(func, args, resul);
+           					}
+           				}
+           				else {
+           					aaray[e]=[];
+           					aaray[e][appCol]=[];
+           					aaray[e][appCol][0]= new apr(func, args, resul);
+           				}
+           				}
+           			}//for
+           		}//if
+           		else {	//the rest should be eval traces
+           		var eStringSplit = eString[a].split('&');
+           		var eType = eStringSplit[2];
+           		var loc = eStringSplit[0].substring(1, eStringSplit[0].length-1);
+       			var code = eStringSplit[1].substring(1, eStringSplit[1].length);
+       			var arrayofLoc = loc.split(':');
+       			var evalRow = parseInt(arrayofLoc[1], 10);
+       			var evalCol = parseInt(arrayofLoc[2], 10);
+       			//curScript is the number of times the <script> tag was called
+       			var currScript;
+       			if(arrayofLoc[0].charAt(0) !== "e") {
+       				currScript = parseInt(arrayofLoc[0].charAt(7),10);
+       			}
+       			else { //if eval(eval())
+       				currScript = parseInt(arrayofLoc[0].charAt(12), 10);
+       			}
+       			if(currScript>oldScript) {
+       				for(var g =scriptNum+1; g < lines.length;g++) {
+       					if(lines[g].indexOf("<script>") !== -1 || lines[g].indexOf('<script type="text/javascript">')!== -1 ||
+       					lines[g].indexOf('<Script language="Javascript">') !==-1 || lines[g].indexOf('<script language="Javascript">') !==-1) {
+       						scriptNum = g;
+       						break;
+       					}
+       				}
+       			}
+       			oldScript = currScript;
+       			//this checks if the eval string is more than one line and changes the evalRow and evalCol
+       			if(evalRow !== parseInt(arrayofLoc[3],10)) {
+       				evalRow -= 1;
+       				evalCol = lines[evalRow+scriptNum -1].indexOf("eval")+6;
+       			}
+       			//if it is eval(eval()), changes the evalCol
+       			if(eStringSplit[0].indexOf("eval")!== -1) {
+       				var som = eStringSplit[0].split(')');
+       				var num1 = som[0].split(':');
+       				var num2 = som[1].split(':');
+       				evalCol = parseInt(num1[2],10)+parseInt(num2[2], 10);
+       				}
+       				//going through the source file
+    			for(var b = 0; b < lines.length; b++) {
+           			var indexArr = []; //indexArr keeps track of all the evals in one line
+           			var evalIndex = lines[b].indexOf("eval");
+           			while(evalIndex !== -1) { //checks if there are multiple evals in one line
+           				indexArr.push(evalIndex);
+           				evalIndex = lines[b].indexOf("eval", evalIndex+1);
+           			}
+           			if(indexArr.length >0) {
+           				//going through all the evals in specified line
+           			for(var d =0; d < indexArr.length; d++) {
+           				if(b===evalRow+scriptNum-1 && evalCol===indexArr[d]+6) {
+           					if(array[b+1]) {
+    						var check = false;
+    						if(typeof(array[b+1][evalCol])==="undefined") { //if row exists, but not column
+    							array[b+1][evalCol]=[];
+       							array[b+1][evalCol][0]=new str(code, 1, eType);
+    						}
+    						else {
+    							for(var c = 0; c < (array[b+1][evalCol]).length; c++) {
+	    						if((array[b+1][evalCol])[c].strname === code) { //if they're the same, increase frequency
+		    						(array[b+1][evalCol])[c].fre +=1;
+	      			 				check = true;
+	    						}
+       							}
+       							if(!check) {
+       							var item = new str(code, 1, eType); //if not, add new item
+       								array[b+1][evalCol][c]=item;
+       							}
+    						}
+						}
+      					else { //creates new item in array
+      						var description = new str(code, 1, eType);
+ 			    			array[b+1]=[]; 
+      						array[b+1][evalCol]=[];
+   			   				array[b+1][evalCol][0] = description;
+						}
+           				k = "true";
+            			break;
+           				}
+           			}
+           			}
+           		}//for
+           		}//else
+           	}//eStringfor
+           	//going through the source file to show the results in a readable format
+      		for (var i=0; i < lines.length-1; i++) {
+      			if (k && array.length>1) { //for eval
+      				for(key in array) { //row
+      					if(parseInt(key, 10) === i+1) {
+      					for(keys in array[key]) { //col
+      						for(keyss in array[key][keys]) {
+								var descriptionString = "The code [ "+array[key][keys][keyss].strname+"] has been generated "
+								+ array[key][keys][keyss].fre + " time(s) "+ " with type:"+array[key][keys][keyss].type;
+                  				problems.push({
+	                    		description: descriptionString,
+	    	                	line: i + 1,
+	        	            	start: keys-5,
+	            	        	end: keys-1,
+	                	    	severity: "warning" });             
+                  			}//for
+                  		}//for
+                  		}//if
+                  	}//for
+                 }//if
+                 if(aaray.length>1) { //for apply
+                 	for(key in aaray) { //row
+                 		if(parseInt(key, 10) === i+1) {
+                 			for(keys in aaray[key]) {
+                 				var mat = lines[i].indexOf("apply"); //finding the index of 'apply'
+                 				for(keyss in aaray[key][keys]) {
+                 					if(mat !== -1) {
+                 					var descript = "There is a [ "+aaray[key][keys][keyss].aname +" ] function with parameters of [ "+
+                 					aaray[key][keys][keyss].arg+" ] and result of [ "+aaray[key][keys][keyss].res+" ]";
+									problems.push({
+	                    		description: descript,
+	    	                	line: i + 1,
+	        	            	start: mat+1, //the yellow underline will be under the word 'apply'
+	            	        	end: mat+6,
+	                	    	severity: "warning" }); 
+	                	    	}
+                 				}//for
+                 			}//for
+                 		}//if
+                 	}//for
+                 }//else if
+            }
+            var result = { problems: problems };
+            return result;
+        });
+    }};
+    var properties = {
+        name: "Eval function",
+        contentType: ["application/javascript", "text/html"]
+    };
+    provider.registerServiceProvider("orion.edit.validator", serviceImpl, properties);
+ 	provider.connect();
+ 	</script>
+</head>
+<body></body>
+</html>
