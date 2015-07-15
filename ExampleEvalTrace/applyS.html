@@ -1,0 +1,44 @@
+<html>
+<head>
+<script>
+var myObject, myArray;
+function myFunction(a, b) {
+	return a*b;
+}
+myArray = [10, 2];
+myObject = myFunction.apply(myObject, myArray);
+console.log(myObject);
+/* min/max number in an array */
+var numbers = [5, 6, 2, 3, 7];
+/* using Math.min/Math.max apply */
+var max = Math.max.apply(null, numbers); 
+/* This about equal to Math.max(numbers[0], ...) 
+or Math.max(5, 6, ...) */
+var min = Math.min.apply(null, numbers);
+var one = [2,3,7,8];
+function average(arr) {
+	var sum=0;
+	for(var i=0;i<arr.length;i++) {
+	sum+=arr[i];
+	}
+	console.log(sum/arr.length);
+}
+var two = [];
+two[0]=one;
+two =average.apply(this, two);
+var one = [2,3,7,8];
+function average(arr) {
+	var sum=0;
+	for(var i=0;i<arr.length;i++) {
+	sum+=arr[i];
+	}
+	return sum/arr.length;
+}
+var two = [];
+two[0]=one;
+average.apply(this, two);
+</script>
+</head>
+<body>
+</body>
+</html>
