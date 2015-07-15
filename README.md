@@ -25,5 +25,6 @@ Here is a useful link to help show the methods used and their parameters: http:/
 
 HOW TO
 
-In order to run this plugin and see the results, you must put all the files into one folder in Orionhub.org
-The eval plugin file must be opened as a website and the url must be saved. In the settings tab of Orion, the 'install' button is clicked and the url is inserted. On the source file, all of the corresponding occurences of 'eval' should be underlined in yellow. When you hover on that word, it should show you the eval traces corresponding to that line.
+In order to run this plugin and see the results, you must put the plugin file, a text file and the corresponding html file into one folder in Orionhub.org
+The plugin file must be opened as a website and the url must be saved. You can do this by selecting the intended file and upon right clicking the file, select Open With -> Web Browser.
+In the settings tab of Orion, the 'install' button is clicked and the url is inserted. On the source file, all of the corresponding occurences of 'eval' and/or 'apply' should be underlined in yellow. When you hover on that word, it should show you the eval traces corresponding to that line.
