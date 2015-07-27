@@ -30,8 +30,8 @@ The plugin file must be opened as a website and the url must be saved. You can d
 In the settings tab of Orion, the 'install' button is clicked and the url is inserted. On the source file, all of the corresponding occurences of 'eval' and/or 'apply' should be underlined in yellow. When you hover on that word, it should show you the eval traces corresponding to that line.
 
 Here are the matches of traces and source files with plugins:
-Berts-BreakdownEval.txt and bertsSource.html --> EvalPlugin.html and UpdatedEvalPlugin.html
-applyR.txt and applyS.html --> Apply&EvalPlugin.html
+Berts-BreakdownEval.txt and bertsSource.html --> EvalPlugin.html and UpdatedEvalPlugin.html \n
+applyR.txt and applyS.html --> Apply&EvalPlugin.html \n
 eval&array.txt and eval&array.html --> Apply&EvalPlugin.html
 
 ***make sure the correct trace (text) file is supplied in the plugin.
