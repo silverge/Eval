@@ -8,21 +8,31 @@
   	<script>
     var headers = {
         name: "Eval & Apply Plugin",
-        version: "1.0",
+        version: "5.0",
         description: "Eval and Apply Plugin",
     };
     var provider = new orion.PluginProvider(headers);
   //this is an object for the eval function
-	function str(strname, fre, type){
+	function eva(strname, fre, type){
     		this.strname= strname;
     		this.fre= fre;
     		this.type = type;
     	}
     	//this is an object for the apply function
-    	function apr(aname, arg, res) {
+    	function apr(aname, arg, res, loc) {
     		this.aname = aname;
     		this.arg = arg;
     		this.res = res;
+    		this.loc = loc;
+    		var argloc=""; //a spot for the parameter location
+    	}
+    	//this is an object for the function location
+    	function newLoc(aname,row, col, endrow, endcol) {
+    		this.aname = aname;
+    		this.row = row;
+    		this.col = col;
+    		this.endrow = endrow;
+    		this.endcol = endcol;
     	}
 	var serviceImpl = {
       computeProblems: function(editorContext) {
@@ -31,7 +41,7 @@
       		
       		var lines = contents.split(/\r?\n/); //split at a return and/or new line
       		var xmlhttp=new XMLHttpRequest();
-      		xmlhttp.open("GET","applyR.txt", false); // This plugin is curently set only for one text file
+      		xmlhttp.open("GET","eval.txt", false); // This plugin is curently set only for one text file
       		xmlhttp.send(); //sends request, in this case GET, to server
       		var xmlstring = xmlhttp.responseText; //turns file text into a string
       		var eString = xmlstring.split(/\r?\n/);
@@ -42,6 +52,7 @@
 			var oldScript=-1;
            	var scriptNumb=0;
            	var oldScripts=-1;
+           
            	//for loop going through all of the analysis results
            	for(var a = 0; a < eString.length; a++) {
            		if(eString[a].match(/@/g) !== null) {	//checks if the line is an apply analysis
@@ -53,6 +64,8 @@
            			var args = split[2]; //leave for now
            			var resul = split[3];//leave for now
            			var currScripts=parseInt(split[0].charAt(8), 10);
+           				var funcLoc=null;
+           				var argrow=false;
        			if(currScripts>oldScripts) {
        				for(var f =scriptNumb+1; f < lines.length;f++) {
        					if(lines[f].indexOf("<script>") !== -1 || lines[f].indexOf('<script type="text/javascript">')!== -1 ||
@@ -63,29 +76,43 @@
        				}
        			}
        			oldScripts = currScripts;
+       			//creates function location object of trace exists
+				if(split[5].length>0) {
+           				var newloc = split[5].split(':');
+           				var newrow = parseInt(newloc[1],10)+scriptNumb;
+           				var newcol = parseInt(newloc[2],10);
+           				var newrowend = parseInt(newloc[3],10)+scriptNumb;
+           				var newcolend = parseInt(newloc[4].substring(0, 1),10);
+           				//all parameters for newLoc are numbers
+           				funcLoc = new newLoc(func,newrow, newcol, newrowend, newcolend);
+           			}
+           			//creates parameter location variable of trace exists
+				if(split[6].length>0){
+					var argloc = split[6].split(':');
+					argrow = parseInt(argloc[1],10)+scriptNumb;
+					
+				}
        			//going through the source file to find the match for the trace
        			//and adding to the array
            			for(var e=0;e<lines.length;e++) {
-           				if(e===appRow+scriptNumb && func === "apply()") {
-           				if(aaray[e]) {
-           					if(typeof(aaray[e][appCol])==="undefined") {
-           						aaray[e][appCol]=[];
-           						aaray[e][appCol][0]= new apr(func, args, resul);
-           					}
-           				}
-           				else {
+           				if(e===appRow+scriptNumb && func === "apply") {
            					aaray[e]=[];
            					aaray[e][appCol]=[];
-           					aaray[e][appCol][0]= new apr(func, args, resul);
-           				}
+           					aaray[e][appCol][0]= new apr(func, args, resul,appRow+scriptNumb);
+								if(funcLoc!== null) { //adds new location to array, if exists
+           							aaray[e][appCol][0].loc = funcLoc;
+           						}
+           						if(argrow!==false){
+           							aaray[e][appCol][0].argloc=argrow;
+           						}
            				}
            			}//for
            		}//if
            		else {	//the rest should be eval traces
            		var eStringSplit = eString[a].split('&');
            		var eType = eStringSplit[2];
-           		var loc = eStringSplit[0].substring(1, eStringSplit[0].length-1);
-       			var code = eStringSplit[1].substring(1, eStringSplit[1].length);
+           		var loc = eStringSplit[0].substring(1, eStringSplit[0].length);
+       			var code = eStringSplit[1];
        			var arrayofLoc = loc.split(':');
        			var evalRow = parseInt(arrayofLoc[1], 10);
        			var evalCol = parseInt(arrayofLoc[2], 10);
@@ -135,7 +162,7 @@
     						var check = false;
     						if(typeof(array[b+1][evalCol])==="undefined") { //if row exists, but not column
     							array[b+1][evalCol]=[];
-       							array[b+1][evalCol][0]=new str(code, 1, eType);
+       							array[b+1][evalCol][0]=new eva(code, 1, eType);
     						}
     						else {
     							for(var c = 0; c < (array[b+1][evalCol]).length; c++) {
@@ -145,13 +172,13 @@
 	    						}
        							}
        							if(!check) {
-       							var item = new str(code, 1, eType); //if not, add new item
+       							var item = new eva(code, 1, eType); //if not, add new item
        								array[b+1][evalCol][c]=item;
        							}
     						}
 						}
       					else { //creates new item in array
-      						var description = new str(code, 1, eType);
+      						var description = new eva(code, 1, eType);
  			    			array[b+1]=[]; 
       						array[b+1][evalCol]=[];
    			   				array[b+1][evalCol][0] = description;
@@ -193,6 +220,12 @@
                  					if(mat !== -1) {
                  					var descript = "There is a [ "+aaray[key][keys][keyss].aname +" ] function with parameters of [ "+
                  					aaray[key][keys][keyss].arg+" ] and result of [ "+aaray[key][keys][keyss].res+" ]";
+									if(typeof(aaray[key][keys][keyss].loc)==="object") {
+										descript+=" whose function origin starts at line ["+aaray[key][keys][keyss].loc.row+"]";
+									}
+									if(typeof(aaray[key][keys][keyss].argloc)==="number"){
+										descript+=" and parameter location is at line ["+aaray[key][keys][keyss].argloc+"]";
+									}
 									problems.push({
 	                    		description: descript,
 	    	                	line: i + 1,
