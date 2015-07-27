@@ -1,0 +1,24 @@
+(inline-0_orig_.js:2:18:2:30)&var p = 0;&string
+(inline-0_orig_.js:4:6:4:10)&null&object
+(inline-0_orig_.js:5:6:5:12)&null&string
+(inline-0_orig_.js:6:6:6:8)&&string
+(inline-0_orig_.js:9:6:9:13)&y=2+x&string
+(inline-0_orig_.js:10:6:10:23)&eval('x=x+1;');&string
+(eval(inline-0_orig_.js:10:6:10:23):1:6:1:14)&x=x+1;&string
+(inline-0_orig_.js:16:12:16:43)@apply@myFunc@10,2@20@(inline-0_orig_.js:12:1:14:2)@(inline-0_orig_.js:15:11:15:18)
+(inline-1_orig_.js:5:6:5:33)&var m = myFunction(1, 2);&string
+(inline-1_orig_.js:7:6:7:14)&y=2+0&string
+(inline-1_orig_.js:8:6:8:14)&n=n+2;&string
+(inline-1_orig_.js:7:6:7:14)&y=2+3&string
+(inline-1_orig_.js:8:6:8:14)&n=n+2;&string
+(inline-1_orig_.js:7:6:7:14)&y=2+6&string
+(inline-1_orig_.js:8:6:8:14)&n=n+2;&string
+(inline-1_orig_.js:10:6:10:29)&console.log('hello');&string
+(inline-1_orig_.js:10:37:10:41)&hi&string
+(inline-1_orig_.js:10:49:10:54)&wow&string
+(inline-1_orig_.js:12:6:12:7)&undefined&undefined
+(inline-1_orig_.js:13:6:13:47)&var g = function (c, d) {return c * d};&string
+(inline-1_orig_.js:14:6:14:28)&console.log(g(3,4));&string
+(inline-1_orig_.js:18:11:18:40)@apply@max@5,6,2,3,7@7@@(inline-1_orig_.js:16:15:16:30)
+(inline-1_orig_.js:21:11:21:40)@apply@min@5,6,2,3,7@2@@(inline-1_orig_.js:16:15:16:30)
+(inline-1_orig_.js:32:1:32:25)@apply@average@2,3,7,8@5@(inline-1_orig_.js:23:1:29:2)@(inline-1_orig_.js:30:11:30:13)
