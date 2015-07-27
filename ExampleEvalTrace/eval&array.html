@@ -1,0 +1,55 @@
+<html>
+<head>
+<script>
+console.log(eval("var p = 0;"));
+eval();
+eval(null);
+eval("null");
+eval("");
+var y=1;
+var x=2;
+eval("y=2+x");
+eval("eval('x=x+1;');");
+var myObject, myArray;
+function myFunc(a, b) {
+	return a*b;
+}
+myArray = [10, 2];
+myObject = myFunc.apply(myObject, myArray);
+console.log(myObject);
+</script>
+<script>
+function myFunction(a, b) {
+    return a+b;
+	}
+eval("var m = myFunction(1, 2);");
+for(var n =0; n < 7; n++) {
+eval("y=2+"+n);
+eval("n=n+2;");
+}
+eval("console.log('hello');"); eval("hi"); eval("wow");
+var i;
+eval(i);
+eval("var g = function (c, d) {return c * d};");
+eval("console.log(g(3,4));");
+/* min/max number in an array */
+var numbers = [5, 6, 2, 3, 7];
+/* using Math.min/Math.max apply */
+var max = Math.max.apply(null, numbers); 
+/* This about equal to Math.max(numbers[0], ...) 
+or Math.max(5, 6, ...) */
+var min = Math.min.apply(null, numbers);
+var one = [2,3,7,8];
+function average(arr) {
+	var sum=0;
+	for(var i=0;i<arr.length;i++) {
+	sum+=arr[i];
+	}
+	return sum/arr.length;
+}
+var two = [];
+two[0]=one;
+average.apply(this, two);
+</script>
+</head>
+</html>
