@@ -33,3 +33,5 @@ Here are the matches of traces and source files with plugins:
 Berts-BreakdownEval.txt and bertsSource.html --> EvalPlugin.html and UpdatedEvalPlugin.html
 applyR.txt and applyS.html --> Apply&EvalPlugin.html
 eval&array.txt and eval&array.html --> Apply&EvalPlugin.html
+***make sure the correct trace (text) file is supplied in the plugin.
+--> in the line where it says: xmlhttp.open("GET","eval.txt", false); 
